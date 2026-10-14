@@ -1,0 +1,63 @@
+# ==============================================================================
+# Wedding Uploader - Docker Compose Configuration
+# ==============================================================================
+# Copy this file or use docker-compose.yml directly after creating your .env file:
+#   cp .env.example .env
+#   docker compose up -d --build
+# ==============================================================================
+
+services:
+  # --- Core Web Application ---
+  wedding-uploader:
+    build: .
+    container_name: ${CONTAINER_NAME:-wedding-uploader}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-UTC}
+      - UPLOAD_FOLDER=/uploads
+      - COUPLE_NAME=${COUPLE_NAME:-Our Wedding}
+      - EVENT_TITLE=${EVENT_TITLE:-Wedding Moments}
+      - EVENT_SUBTITLE=${EVENT_SUBTITLE:-Share your moments from our special day}
+      - APP_URL=${APP_URL:-}
+    volumes:
+      - ./src:/app/src
+      - ${MEDIA_UPLOAD_PATH:-./media}:/uploads
+    ports:
+      - "${PORT:-3000}:3000"
+    networks:
+      default:
+        aliases:
+          - wedding-uploader
+
+  # ============================================================================
+  # Optional Companion Services:
+  # Remove or comment out nginx-proxy-manager and duckdns if you are using your
+  # own reverse proxy (Cloudflare Tunnel, Caddy, Traefik) or running locally.
+  # ============================================================================
+
+  # --- Reverse Proxy with automated SSL certificates ---
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"        # Public HTTP port
+      - "443:443"      # Public HTTPS port
+      - "81:81"        # NPM Admin Web UI
+    volumes:
+      - ${NPM_DATA_PATH:-./NPM/data}:/data
+      - ${NPM_LETSENCRYPT_PATH:-./NPM/letsencrypt}:/etc/letsencrypt
+
+  # --- Dynamic DNS for home hosting (DuckDNS) ---
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    container_name: duckdns
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+      - SUBDOMAINS=${DUCKDNS_SUBDOMAINS}
+      - TOKEN=${DUCKDNS_TOKEN}
+    restart: unless-stopped

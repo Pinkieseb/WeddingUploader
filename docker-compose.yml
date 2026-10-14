@@ -1,0 +1,47 @@
+services:
+  wedding-uploader:
+    build: .
+    container_name: ${CONTAINER_NAME:-wedding-uploader}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-UTC}
+      - UPLOAD_FOLDER=/uploads
+      - COUPLE_NAME=${COUPLE_NAME:-Our Wedding}
+      - EVENT_TITLE=${EVENT_TITLE:-Wedding Moments}
+      - EVENT_SUBTITLE=${EVENT_SUBTITLE:-Share your moments from our special day}
+      - APP_URL=${APP_URL:-}
+    volumes:
+      - ./src:/app/src
+      - ${MEDIA_UPLOAD_PATH:-./media}:/uploads
+    ports:
+      - "${PORT:-3000}:3000"
+    networks:
+      default:
+        aliases:
+          - wedding-drop
+          - wedding-uploader
+
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - ${NPM_DATA_PATH:-./NPM/data}:/data
+      - ${NPM_LETSENCRYPT_PATH:-./NPM/letsencrypt}:/etc/letsencrypt
+
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    container_name: duckdns
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+      - SUBDOMAINS=${DUCKDNS_SUBDOMAINS}
+      - TOKEN=${DUCKDNS_TOKEN}
+    restart: unless-stopped

@@ -1,0 +1,54 @@
+# ==============================================================================
+# Wedding Uploader - .gitignore
+# ==============================================================================
+
+# Environment files & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+*.db
+*.sqlite
+*.sqlite3
+
+# Nginx Proxy Manager data, database, certificates, and logs
+# (Contains Let's Encrypt private keys, SQLite database, and server logs)
+NPM/
+NPM/*
+npm/
+npm/*
+
+# Uploaded guest media and server logs
+uploads/
+media/
+_activity.log
+_Guest Messages.txt
+*.log
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System & IDE files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker local overrides
+docker-compose.override.yml
